@@ -4,19 +4,20 @@
 #include <DNSServer.h>
 #include <time.h>
 #include <UrlEncode.h>
+#include <Wire.h>
 #include <SPI.h>
 #include "../lib/Phmetro/Phmetro.h"
 #include "Utils/WifiManager.h"
 #include "../lib/WhatsApp/WhatsApp.h"
 #include "Services/phApiSender.h"
 
-#define READY_PIN 4  // Defina o pino correto
-volatile int contagem = 0; // Defina a variável contagem
-
 WifiManager wifiConnect;
-Phmetro phMetro(0x49, 20.41272, 10); // Instancie phMetro com os parâmetros corretos
 WhatsApp whatsapp;
 phApiSender phSender;
+Phmetro* phMetro = nullptr;
+
+#define READY_PIN 4  // Defina o pino correto
+volatile int contagem = 0; // Defina a variável contagem
 
 unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 3600000; // 36000 1 hora
@@ -29,14 +30,23 @@ void IRAM_ATTR onDataReady() {
 void setup() {
     Serial.begin(115200);
     delay(2000);
+
     wifiConnect.connect();
+
+    Wire.begin(21, 22); // SDA, SCL
+    Wire.setClock(100000);  
+    Serial.println("I2C iniciado");
 
     pinMode(READY_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(READY_PIN), onDataReady, FALLING);
+    
+    phMetro = new Phmetro(0x49, 20.41272, 10);
+    Serial.println("phMetro instanciado");
 }
 
+
 void loop() {
-    phMetro.collectReading();
+    phMetro->collectReading();
 
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi desconectado, tentando reconectar...");
@@ -48,10 +58,9 @@ void loop() {
             lastSendTime = millis();
         }
         
-        float phValue = phMetro.calculateAveragePh();
-        phSender.sendPhToApi(phValue); // Ajuste o valor conforme necessário
+        float phValue = phMetro->calculateAveragePh();
+        phSender.sendPhToApi(phValue);
     }
 
-    // Serial.println(5);
     delay(10000);
 }

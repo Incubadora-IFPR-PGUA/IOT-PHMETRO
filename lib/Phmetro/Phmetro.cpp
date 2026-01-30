@@ -2,18 +2,25 @@
 
 Phmetro::Phmetro(uint8_t adcAddress, float calibrationValue, int numReadings)
     : adcAddress(adcAddress), calibrationValue(calibrationValue), numReadings(numReadings), ads() {
+    
+    if (!ads.begin(adcAddress)) {
+        Serial.println("ERRO: ADS1115 nao encontrado no barramento I2C");
+    } else {
+        Serial.println("ADS1115 conectado com sucesso");
+    }
+
     ads.setGain(GAIN_TWOTHIRDS);
-    ads.begin(adcAddress);  // Configura o endereço I2C aqui, usando o método begin
 }
 
+
 void Phmetro::collectReading() {
-    if (count < numReadings) {
-        float voltage = (ads.readADC_SingleEnded(0) * 5.0) / 65536.0;
-        phValues.push(voltage);
-        if (phValues.size() > numReadings) phValues.pop();
-        count++;
-    }
+    int16_t raw = ads.readADC_SingleEnded(0);
+    float voltage = raw * 0.1875 / 1000.0; // conversão correta
+
+    phValues.push(voltage);
+    if (phValues.size() > numReadings) phValues.pop();
 }
+
 
 float Phmetro::calculateAveragePh() {
     float sum = 0.0;
