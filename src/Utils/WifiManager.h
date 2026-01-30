@@ -7,7 +7,7 @@ class WifiManager {
 public:
     void connect() {
         WiFiManager wm;
-        if (!wm.autoConnect("TecnoMaub", "password")) {
+        if (!wm.autoConnect("PHmetro", "password")) {
             Serial.println("Failed to connect!!");
         } else {
             Serial.println("Successful connection!!");

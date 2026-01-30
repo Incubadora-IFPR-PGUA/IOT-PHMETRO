@@ -27,7 +27,8 @@ void IRAM_ATTR onDataReady() {
 }
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
+    delay(2000);
     wifiConnect.connect();
 
     pinMode(READY_PIN, INPUT);
@@ -51,6 +52,6 @@ void loop() {
         phSender.sendPhToApi(phValue); // Ajuste o valor conforme necessário
     }
 
-    Serial.println(5);
+    // Serial.println(5);
     delay(10000);
 }

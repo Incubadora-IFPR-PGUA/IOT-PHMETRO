@@ -3,7 +3,7 @@
 #include <HTTPClient.h>
 
 void phApiSender::sendPhToApi(float phValue) {
-    String URL = "http://85.31.63.241:8082/inserirPh";
+    String URL = "https://apivitrineprototipos.incubadoraifpr.com.br/inserirPh";
     HTTPClient http;
 
     http.begin(URL);
