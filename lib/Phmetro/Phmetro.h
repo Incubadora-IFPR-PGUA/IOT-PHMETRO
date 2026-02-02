@@ -13,6 +13,8 @@ public:
     void collectReading();
     float calculateAveragePh();
 
+    bool isConnected() const { return adsFound; }
+
 private:
     Adafruit_ADS1115 ads;
     std::queue<float> phValues;
@@ -20,4 +22,5 @@ private:
     float calibrationValue;
     int numReadings;
     int count = 0;
+    bool adsFound = false;
 };

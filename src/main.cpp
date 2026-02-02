@@ -40,7 +40,7 @@ void setup() {
     pinMode(READY_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(READY_PIN), onDataReady, FALLING);
     
-    phMetro = new Phmetro(0x49, 20.41272, 10);
+    phMetro = new Phmetro(0x48, 20.41272, 10);
     Serial.println("phMetro instanciado");
 }
 
@@ -58,8 +58,10 @@ void loop() {
             lastSendTime = millis();
         }
         
-        float phValue = phMetro->calculateAveragePh();
-        phSender.sendPhToApi(phValue);
+        if (phMetro->isConnected()) {
+            float phValue = phMetro->calculateAveragePh();
+            phSender.sendPhToApi(phValue);
+        }
     }
 
     delay(10000);
