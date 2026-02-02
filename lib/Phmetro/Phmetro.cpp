@@ -1,7 +1,7 @@
 #include "Phmetro.h"
 
-Phmetro::Phmetro(uint8_t adcAddress, float calibrationValue, int numReadings)
-    : adcAddress(adcAddress), calibrationValue(calibrationValue), numReadings(numReadings), ads() {
+Phmetro::Phmetro(uint8_t adcAddress, float slope, float offset, int numReadings)
+    : adcAddress(adcAddress), slope(slope), offset(offset), numReadings(numReadings), ads() {
     
     adsFound = ads.begin(adcAddress);
     if (!adsFound) {
@@ -33,5 +33,17 @@ float Phmetro::calculateAveragePh() {
         sum += temp.front();
         temp.pop();
     }
-    return (-9.27272 * (sum / phValues.size())) + calibrationValue;
+    float vAvg = sum / phValues.size();
+    return slope * vAvg + offset;
+}
+
+float Phmetro::getAverageVoltage() {
+    if (phValues.empty()) return 0.0f;
+    float sum = 0.0;
+    std::queue<float> temp = phValues;
+    while (!temp.empty()) {
+        sum += temp.front();
+        temp.pop();
+    }
+    return sum / phValues.size();
 }

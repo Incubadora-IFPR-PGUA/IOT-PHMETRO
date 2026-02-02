@@ -19,6 +19,11 @@ Phmetro* phMetro = nullptr;
 #define READY_PIN 4  // Defina o pino correto
 volatile int contagem = 0; // Defina a variável contagem
 
+// Calibração pH: use tampão pH 7 e pH 4, anote as tensões no Serial e calcule:
+// slope = (7 - 4) / (V_pH7 - V_pH4)   e   offset = 7 - slope * V_pH7
+#define CALIB_SLOPE   -9.27272f
+#define CALIB_OFFSET  20.41272f
+
 unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 3600000; // 36000 1 hora
 
@@ -40,7 +45,7 @@ void setup() {
     pinMode(READY_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(READY_PIN), onDataReady, FALLING);
     
-    phMetro = new Phmetro(0x48, 20.41272, 10);
+    phMetro = new Phmetro(0x48, CALIB_SLOPE, CALIB_OFFSET, 10);
     Serial.println("phMetro instanciado");
 }
 
@@ -60,6 +65,8 @@ void loop() {
         
         if (phMetro->isConnected()) {
             float phValue = phMetro->calculateAveragePh();
+            float volts = phMetro->getAverageVoltage();
+            Serial.printf("pH=%.2f  V=%.4f\n", phValue, volts);  // para calibração: anote V em tampão 7 e 4
             phSender.sendPhToApi(phValue);
         }
     }
