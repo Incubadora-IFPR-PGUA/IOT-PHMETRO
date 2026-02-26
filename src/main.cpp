@@ -43,6 +43,9 @@ OtaManager otaManager(OTA_VERSION_URL, OTA_FIRMWARE_URL, FIRMWARE_VERSION);
 unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 3600000; // 1 hora
 
+unsigned long lastBlink = 0;
+bool ledState = false;
+
 float readPH() {
     float sum = 0;
     int samples = 10;
@@ -81,51 +84,52 @@ bool initADS() {
 void setup() {
     pinMode(READY_PIN, INPUT);
     pinMode(LED_PIN, OUTPUT);
+    
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
-    // WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+    Serial.begin(115200);
+    delay(300);
 
-    // Serial.begin(115200);
-    // delay(300);
+    Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
 
-    // Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
+    Wire.begin(21, 22);
+    Wire.setClock(100000);
+    delay(50);
 
-    // Wire.begin(21, 22);
-    // Wire.setClock(100000);
-    // delay(50);
+    ads.setGain(GAIN_TWOTHIRDS);
 
-    // ads.setGain(GAIN_TWOTHIRDS);
+    if (!initADS()) {
+        Serial.println("Falha ao iniciar o ADS.");
+        //while (1);
+    }
 
-    // if (!initADS()) {
-    //     Serial.println("Falha ao iniciar o ADS.");
-    //     while (1);
-    // }
+    wifiConnect.connect();
+    pinMode(READY_PIN, INPUT);
 
-    // wifiConnect.connect();
-    // pinMode(READY_PIN, INPUT);
-
-    // // Verifica OTA logo ao iniciar
-    // otaManager.checkAndUpdate();
-    // lastOtaCheck = millis();
+    // Verifica OTA logo ao iniciar
+    otaManager.checkAndUpdate();
+    lastOtaCheck = millis();
 }
 
 void loop() {
-    digitalWrite(LED_PIN, HIGH);
-    delay(200);
-    digitalWrite(LED_PIN, LOW);
-    delay(200);
+    // Pisca LED sem travar o loop
+    if (millis() - lastBlink >= 50) {
+        ledState = !ledState;
+        digitalWrite(LED_PIN, ledState);
+        lastBlink = millis();
+    }
 
-    // if (WiFi.status() != WL_CONNECTED) {
-    //     Serial.println("WiFi desconectado, reconectando...");
-    //     wifiConnect.connect();
-    //     delay(5000);
-    //     return;
-    // }
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi desconectado, reconectando...");
+        wifiConnect.connect();
+        delay(5000);
+        return;
+    }
 
-    // // Verificação periódica de OTA
-    // if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
-    //     otaManager.checkAndUpdate();
-    //     lastOtaCheck = millis();
-    // }
+    if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
+        otaManager.checkAndUpdate();
+        lastOtaCheck = millis();
+    }
 
     // float phValue = readPH();
     // int idEsp32 = 2;
