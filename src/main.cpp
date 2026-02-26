@@ -22,7 +22,7 @@
 #include "../lib/OtaManager/OtaManager.h"
 
 #define READY_PIN 4
-#define FIRMWARE_VERSION   "1.0.0"
+#define FIRMWARE_VERSION   "1.0.1"
 
 #define LED_PIN 2 //remover depois
 
