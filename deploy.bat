@@ -1,0 +1,3 @@
+@echo off
+echo Conectando-se ao servidor...
+ssh root@72.62.140.117 "cd .. && cd home && cd esp && cd htdocs && cd firmware.incubadoraifpr.com.br && git pull"
