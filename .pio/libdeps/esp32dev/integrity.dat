@@ -1,0 +1,5 @@
+adafruit/Adafruit BusIO@^1.16.0
+tzapu/WiFiManager@^2.0.17
+adafruit/Adafruit ADS1X15@^2.5.0
+plageoj/UrlEncode@^1.0.1
+bblanchon/ArduinoJson@^7.2.0

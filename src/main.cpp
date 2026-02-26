@@ -3,11 +3,10 @@
  * @author Josue Henrique (josue21henrique@gmail.com)
  * @brief Firmware para um monitor de pH com ESP32, módulo ADS1115
  *             e sensor pH-4502C.
- * @version 0.1
+ * @version 0.2
  * @date 2026-25-02
  *
  * @copyright Copyright (c) 2026
- *
  */
 
 #include <Arduino.h>
@@ -20,14 +19,26 @@
 #include "Utils/WifiManager.h"
 #include "../lib/WhatsApp/WhatsApp.h"
 #include "Services/phApiSender.h"
+#include "../lib/OtaManager/OtaManager.h"
 
 #define READY_PIN 4
+#define FIRMWARE_VERSION   "1.0.0"
+
+// ─── URLs do seu servidor ─────────────────────────────────────────────────────
+// version.txt deve conter somente o número da versão, ex: "1.0.1"
+#define OTA_VERSION_URL    "http://seu-servidor.com/firmware/version.txt"
+#define OTA_FIRMWARE_URL   "http://seu-servidor.com/firmware/firmware.bin"
+// ─────────────────────────────────────────────────────────────────────────────
+
+const unsigned long OTA_CHECK_INTERVAL = 3600000;
+unsigned long lastOtaCheck = 0;
 
 Adafruit_ADS1115 ads;
 byte adsAddress;
 WifiManager wifiConnect;
 WhatsApp whatsapp;
 phApiSender phSender;
+OtaManager otaManager(OTA_VERSION_URL, OTA_FIRMWARE_URL, FIRMWARE_VERSION);
 
 unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 3600000; // 1 hora
@@ -44,8 +55,6 @@ float readPH() {
 
     float voltage = sum / samples;
     float ph = -5.4545 * voltage + 21.29;
-
-    // Arredonda para 1 casa decimal
     ph = round(ph * 10.0) / 10.0;
 
     Serial.print("Tensão média: ");
@@ -75,11 +84,13 @@ void setup() {
     Serial.begin(115200);
     delay(300);
 
+    Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
+
     Wire.begin(21, 22);
     Wire.setClock(100000);
     delay(50);
 
-    ads.setGain(GAIN_TWOTHIRDS); // ±6.144V
+    ads.setGain(GAIN_TWOTHIRDS);
 
     if (!initADS()) {
         Serial.println("Falha ao iniciar o ADS.");
@@ -88,6 +99,10 @@ void setup() {
 
     wifiConnect.connect();
     pinMode(READY_PIN, INPUT);
+
+    // Verifica OTA logo ao iniciar
+    otaManager.checkAndUpdate();
+    lastOtaCheck = millis();
 }
 
 void loop() {
@@ -96,6 +111,12 @@ void loop() {
         wifiConnect.connect();
         delay(5000);
         return;
+    }
+
+    // Verificação periódica de OTA
+    if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
+        otaManager.checkAndUpdate();
+        lastOtaCheck = millis();
     }
 
     float phValue = readPH();
@@ -108,5 +129,6 @@ void loop() {
         whatsapp.sendWhatsAppMessage("teste");
         lastSendTime = millis();
     }
+
     delay(10000);
 }
