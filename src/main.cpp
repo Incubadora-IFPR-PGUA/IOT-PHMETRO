@@ -24,7 +24,7 @@
 #define READY_PIN 4
 
 Adafruit_ADS1115 ads;
-
+byte adsAddress;
 WifiManager wifiConnect;
 WhatsApp whatsapp;
 phApiSender phSender;
@@ -33,17 +33,40 @@ unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 3600000; // 1 hora
 
 float readPH() {
-    int16_t raw = ads.readADC_SingleEnded(0);
-    float voltage = ads.computeVolts(raw);
+    float sum = 0;
+    int samples = 10;
 
-    // Equação calibrada com seus pontos reais
-    float ph = -14.53 * voltage + 47.69;
+    for (int i = 0; i < samples; i++) {
+        int16_t raw = ads.readADC_SingleEnded(0);
+        sum += ads.computeVolts(raw);
+        delay(50);
+    }
 
-    // Serial.print("Tensão: ");
-    // Serial.print(voltage, 4);
-    // Serial.print(" | pH: ");
-    // Serial.println(ph, 2);
+    float voltage = sum / samples;
+    float ph = -5.4545 * voltage + 21.29;
+
+    // Arredonda para 1 casa decimal
+    ph = round(ph * 10.0) / 10.0;
+
+    Serial.print("Tensão média: ");
+    Serial.print(voltage, 4);
+    Serial.print(" | pH: ");
+    Serial.println(ph, 1);
     return ph;
+}
+
+bool initADS() {
+    if (ads.begin(0x49)) {
+        adsAddress = 0x49;
+        Serial.println("ADS iniciado em 0x49");
+        return true;
+    }
+    if (ads.begin(0x48)) {
+        adsAddress = 0x48;
+        Serial.println("ADS iniciado em 0x48");
+        return true;
+    }
+    return false;
 }
 
 void setup() {
@@ -58,7 +81,7 @@ void setup() {
 
     ads.setGain(GAIN_TWOTHIRDS); // ±6.144V
 
-    if (!ads.begin(0x49)) {
+    if (!initADS()) {
         Serial.println("Falha ao iniciar o ADS.");
         while (1);
     }
@@ -76,11 +99,13 @@ void loop() {
     }
 
     float phValue = readPH();
-    phSender.sendPhToApi(phValue);
+    int idEsp32 = 2;
+
+    phSender.sendPhToApi(phValue, idEsp32);
 
     if (millis() - lastSendTime >= sendInterval) {
         String msg = "pH atual: " + String(phValue, 2);
-        whatsapp.sendWhatsAppMessage(msg);
+        whatsapp.sendWhatsAppMessage("teste");
         lastSendTime = millis();
     }
     delay(10000);

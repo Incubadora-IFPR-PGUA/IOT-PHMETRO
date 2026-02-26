@@ -2,7 +2,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
-void phApiSender::sendPhToApi(float phValue) {
+void phApiSender::sendPhToApi(float phValue, int id) {
     String URL = "https://apivitrineprototipos.incubadoraifpr.com.br/inserirPh";
     HTTPClient http;
 
@@ -11,6 +11,7 @@ void phApiSender::sendPhToApi(float phValue) {
 
     DynamicJsonDocument jsonDoc(200);
     jsonDoc["ph"] = phValue;
+    jsonDoc["id_esp_macAdress"] = id;
     String jsonPayload;
     serializeJson(jsonDoc, jsonPayload);
 

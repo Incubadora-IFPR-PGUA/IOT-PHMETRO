@@ -19,7 +19,7 @@ void setup() {
   Wire.begin(21, 22);
   Wire.setClock(100000);
 
-  if (!ads.begin(0x49)) {
+  if (!ads.begin(0x48)) {
     Serial.println("ADS não encontrado");
     while (1);
   }
