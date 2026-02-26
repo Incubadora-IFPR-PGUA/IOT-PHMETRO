@@ -113,7 +113,7 @@ void setup() {
 
 void loop() {
     // Pisca LED sem travar o loop
-    if (millis() - lastBlink >= 50) {
+    if (millis() - lastBlink >= 500) {
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
         lastBlink = millis();
