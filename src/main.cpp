@@ -81,31 +81,31 @@ bool initADS() {
 void setup() {
     pinMode(READY_PIN, INPUT);
     pinMode(LED_PIN, OUTPUT);
-    
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
-    Serial.begin(115200);
-    delay(300);
+    // WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
-    Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
+    // Serial.begin(115200);
+    // delay(300);
 
-    Wire.begin(21, 22);
-    Wire.setClock(100000);
-    delay(50);
+    // Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
 
-    ads.setGain(GAIN_TWOTHIRDS);
+    // Wire.begin(21, 22);
+    // Wire.setClock(100000);
+    // delay(50);
 
-    if (!initADS()) {
-        Serial.println("Falha ao iniciar o ADS.");
-        while (1);
-    }
+    // ads.setGain(GAIN_TWOTHIRDS);
 
-    wifiConnect.connect();
-    pinMode(READY_PIN, INPUT);
+    // if (!initADS()) {
+    //     Serial.println("Falha ao iniciar o ADS.");
+    //     while (1);
+    // }
 
-    // Verifica OTA logo ao iniciar
-    otaManager.checkAndUpdate();
-    lastOtaCheck = millis();
+    // wifiConnect.connect();
+    // pinMode(READY_PIN, INPUT);
+
+    // // Verifica OTA logo ao iniciar
+    // otaManager.checkAndUpdate();
+    // lastOtaCheck = millis();
 }
 
 void loop() {
@@ -114,29 +114,29 @@ void loop() {
     digitalWrite(LED_PIN, LOW);
     delay(200);
 
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi desconectado, reconectando...");
-        wifiConnect.connect();
-        delay(5000);
-        return;
-    }
+    // if (WiFi.status() != WL_CONNECTED) {
+    //     Serial.println("WiFi desconectado, reconectando...");
+    //     wifiConnect.connect();
+    //     delay(5000);
+    //     return;
+    // }
 
-    // Verificação periódica de OTA
-    if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
-        otaManager.checkAndUpdate();
-        lastOtaCheck = millis();
-    }
+    // // Verificação periódica de OTA
+    // if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
+    //     otaManager.checkAndUpdate();
+    //     lastOtaCheck = millis();
+    // }
 
-    float phValue = readPH();
-    int idEsp32 = 2;
+    // float phValue = readPH();
+    // int idEsp32 = 2;
 
-    phSender.sendPhToApi(phValue, idEsp32);
+    // phSender.sendPhToApi(phValue, idEsp32);
 
-    if (millis() - lastSendTime >= sendInterval) {
-        String msg = "pH atual: " + String(phValue, 2);
-        whatsapp.sendWhatsAppMessage("teste");
-        lastSendTime = millis();
-    }
+    // if (millis() - lastSendTime >= sendInterval) {
+    //     String msg = "pH atual: " + String(phValue, 2);
+    //     whatsapp.sendWhatsAppMessage("teste");
+    //     lastSendTime = millis();
+    // }
 
-    delay(10000);
+    // delay(10000);
 }
