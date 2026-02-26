@@ -27,8 +27,8 @@
 #define LED_PIN 2 //remover depois
 
 // ─── URLs do seu servidor ─────────────────────────────────────────────────────
-#define OTA_VERSION_URL    "https://firmware.incubadoraifpr.com.br/version.txt"
-#define OTA_FIRMWARE_URL   "https://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
+#define OTA_VERSION_URL    "http://firmware.incubadoraifpr.com.br/version.txt"
+#define OTA_FIRMWARE_URL   "http://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
 
 const unsigned long OTA_CHECK_INTERVAL = 3600000;
 unsigned long lastOtaCheck = 0;
@@ -113,7 +113,7 @@ void setup() {
 
 void loop() {
     // Pisca LED sem travar o loop
-    if (millis() - lastBlink >= 50) {
+    if (millis() - lastBlink >= 500) {
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
         lastBlink = millis();
