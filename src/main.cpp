@@ -25,10 +25,8 @@
 #define FIRMWARE_VERSION   "1.0.0"
 
 // ─── URLs do seu servidor ─────────────────────────────────────────────────────
-// version.txt deve conter somente o número da versão, ex: "1.0.1"
-#define OTA_VERSION_URL    "http://seu-servidor.com/firmware/version.txt"
-#define OTA_FIRMWARE_URL   "http://seu-servidor.com/firmware/firmware.bin"
-// ─────────────────────────────────────────────────────────────────────────────
+#define OTA_VERSION_URL    "http://firmware.incubadoraifpr.com.br/version.txt"
+#define OTA_FIRMWARE_URL   "http://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
 
 const unsigned long OTA_CHECK_INTERVAL = 3600000;
 unsigned long lastOtaCheck = 0;
