@@ -24,6 +24,8 @@
 #define READY_PIN 4
 #define FIRMWARE_VERSION   "1.0.0"
 
+#define LED_PIN 2 //remover depois
+
 // ─── URLs do seu servidor ─────────────────────────────────────────────────────
 #define OTA_VERSION_URL    "http://firmware.incubadoraifpr.com.br/version.txt"
 #define OTA_FIRMWARE_URL   "http://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
@@ -77,6 +79,9 @@ bool initADS() {
 }
 
 void setup() {
+    pinMode(READY_PIN, INPUT);
+    pinMode(LED_PIN, OUTPUT);
+    
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
     Serial.begin(115200);
@@ -104,6 +109,11 @@ void setup() {
 }
 
 void loop() {
+    digitalWrite(LED_PIN, HIGH);
+    delay(200);
+    digitalWrite(LED_PIN, LOW);
+    delay(200);
+
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi desconectado, reconectando...");
         wifiConnect.connect();
