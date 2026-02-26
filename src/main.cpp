@@ -22,13 +22,13 @@
 #include "../lib/OtaManager/OtaManager.h"
 
 #define READY_PIN 4
-#define FIRMWARE_VERSION   "1.0.1"
+#define FIRMWARE_VERSION   "1.0.2"
 
 #define LED_PIN 2 //remover depois
 
 // ─── URLs do seu servidor ─────────────────────────────────────────────────────
-#define OTA_VERSION_URL    "http://firmware.incubadoraifpr.com.br/version.txt"
-#define OTA_FIRMWARE_URL   "http://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
+#define OTA_VERSION_URL    "https://firmware.incubadoraifpr.com.br/version.txt"
+#define OTA_FIRMWARE_URL   "https://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
 
 const unsigned long OTA_CHECK_INTERVAL = 3600000;
 unsigned long lastOtaCheck = 0;

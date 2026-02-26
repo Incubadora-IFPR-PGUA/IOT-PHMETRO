@@ -1,11 +1,15 @@
 #include "OtaManager.h"
+#include <WiFiClientSecure.h>
 
 OtaManager::OtaManager(const char* versionUrl, const char* firmwareUrl, const char* currentVersion)
     : _versionUrl(versionUrl), _firmwareUrl(firmwareUrl), _currentVersion(currentVersion) {}
 
 bool OtaManager::isNewVersionAvailable(String& newVersion) {
+    WiFiClientSecure client;
+    client.setInsecure(); // ignora validação do certificado SSL
+
     HTTPClient http;
-    http.begin(_versionUrl);
+    http.begin(client, _versionUrl);
     int httpCode = http.GET();
 
     if (httpCode != HTTP_CODE_OK) {
@@ -36,7 +40,6 @@ void OtaManager::checkAndUpdate() {
 
     Serial.printf("[OTA] Nova versão encontrada: %s. Iniciando atualização...\n", newVersion.c_str());
 
-    // Callbacks de progresso (opcional)
     httpUpdate.onStart([]() {
         Serial.println("[OTA] Iniciando download...");
     });
@@ -50,7 +53,9 @@ void OtaManager::checkAndUpdate() {
         Serial.printf("\n[OTA] Erro: %s\n", httpUpdate.getLastErrorString().c_str());
     });
 
-    WiFiClient client;
+    WiFiClientSecure client;
+    client.setInsecure(); // ignora validação do certificado SSL
+
     t_httpUpdate_return ret = httpUpdate.update(client, _firmwareUrl);
 
     switch (ret) {
@@ -64,7 +69,6 @@ void OtaManager::checkAndUpdate() {
             break;
         case HTTP_UPDATE_OK:
             Serial.println("[OTA] Atualização concluída! Reiniciando...");
-            // O ESP32 reinicia automaticamente
             break;
     }
 }
