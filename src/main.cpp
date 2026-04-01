@@ -1,50 +1,31 @@
-/**
- * @file main.cpp
- * @author Josue Henrique (josue21henrique@gmail.com)
- * @brief Firmware para um monitor de pH com ESP32, módulo ADS1115
- *             e sensor pH-4502C.
- * @version 0.2
- * @date 2026-25-02
- *
- * @copyright Copyright (c) 2026
- */
-
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <WiFi.h>
 #include <soc/rtc_cntl_reg.h>
+#include "ota.h"
 
 #include <Adafruit_ADS1X15.h>
-#include "Utils/WifiManager.h"
 #include "../lib/WhatsApp/WhatsApp.h"
 #include "Services/phApiSender.h"
-#include "../lib/OtaManager/OtaManager.h"
 
 #define READY_PIN 4
-#define FIRMWARE_VERSION   "1.0.2"
-
-#define LED_PIN 2 //remover depois
-
-// ─── URLs do seu servidor ─────────────────────────────────────────────────────
-#define OTA_VERSION_URL    "https://firmware.incubadoraifpr.com.br/version.txt"
-#define OTA_FIRMWARE_URL   "https://firmware.incubadoraifpr.com.br/.pio/build/esp32dev/firmware.bin"
-
-const unsigned long OTA_CHECK_INTERVAL = 3600000;
-unsigned long lastOtaCheck = 0;
+#define LED_PIN 2
 
 Adafruit_ADS1115 ads;
 byte adsAddress;
-WifiManager wifiConnect;
 WhatsApp whatsapp;
 phApiSender phSender;
-OtaManager otaManager(OTA_VERSION_URL, OTA_FIRMWARE_URL, FIRMWARE_VERSION);
 
 unsigned long lastSendTime = 0;
-const unsigned long sendInterval = 3600000; // 1 hora
-
+unsigned long lastPhRead = 0;
 unsigned long lastBlink = 0;
+
+const unsigned long sendInterval = 3600000;
+const unsigned long phInterval = 10000;
+
 bool ledState = false;
+bool adsOk = false;
 
 float readPH() {
     float sum = 0;
@@ -64,6 +45,7 @@ float readPH() {
     Serial.print(voltage, 4);
     Serial.print(" | pH: ");
     Serial.println(ph, 1);
+
     return ph;
 }
 
@@ -84,63 +66,66 @@ bool initADS() {
 void setup() {
     pinMode(READY_PIN, INPUT);
     pinMode(LED_PIN, OUTPUT);
-    
+
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
     Serial.begin(115200);
-    delay(300);
-
-    Serial.printf("\n[BOOT] Versão do firmware: %s\n", FIRMWARE_VERSION);
-
     Wire.begin(21, 22);
     Wire.setClock(100000);
-    delay(50);
+    delay(100);
+
+    Serial.println("\nEscaneando barramento I2C...");
+    int found = 0;
+    for (byte addr = 1; addr < 127; addr++) {
+        Wire.beginTransmission(addr);
+        byte error = Wire.endTransmission();
+        if (error == 0) {
+            Serial.print("  Dispositivo encontrado em 0x");
+            Serial.println(addr, HEX);
+            found++;
+        }
+    }
+    if (found == 0) Serial.println("  Nenhum dispositivo I2C encontrado!");
+    Serial.println("Scan completo.\n");
 
     ads.setGain(GAIN_TWOTHIRDS);
 
-    if (!initADS()) {
+    adsOk = initADS();
+    if (!adsOk) {
         Serial.println("Falha ao iniciar o ADS.");
         //while (1);
     }
 
-    wifiConnect.connect();
-    pinMode(READY_PIN, INPUT);
-
-    // Verifica OTA logo ao iniciar
-    otaManager.checkAndUpdate();
-    lastOtaCheck = millis();
+    setupOTA();
 }
 
 void loop() {
-    // Pisca LED sem travar o loop
-    if (millis() - lastBlink >= 500) {
+    ArduinoOTA.handle();
+
+    // Pisca LED
+    if (millis() - lastBlink >= 50) {
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
         lastBlink = millis();
     }
 
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi desconectado, reconectando...");
-        wifiConnect.connect();
-        delay(5000);
-        return;
+    // Lê pH a cada 10s sem travar
+    if (millis() - lastPhRead >= phInterval) {
+        lastPhRead = millis();
+
+        if (!adsOk) {
+            Serial.println("ADS offline, tentando reiniciar...");
+            adsOk = initADS();
+        }
+
+        if (adsOk) {
+            float phValue = readPH();
+            phSender.sendPhToApi(phValue, 2);
+
+            if (millis() - lastSendTime >= sendInterval) {
+                whatsapp.sendWhatsAppMessage("pH atual: " + String(phValue, 2));
+                lastSendTime = millis();
+            }
+        }
     }
-
-    if (millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
-        otaManager.checkAndUpdate();
-        lastOtaCheck = millis();
-    }
-
-    // float phValue = readPH();
-    // int idEsp32 = 2;
-
-    // phSender.sendPhToApi(phValue, idEsp32);
-
-    // if (millis() - lastSendTime >= sendInterval) {
-    //     String msg = "pH atual: " + String(phValue, 2);
-    //     whatsapp.sendWhatsAppMessage("teste");
-    //     lastSendTime = millis();
-    // }
-
-    // delay(10000);
 }

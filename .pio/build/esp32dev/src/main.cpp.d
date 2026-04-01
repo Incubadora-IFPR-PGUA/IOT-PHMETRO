@@ -198,9 +198,7 @@
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/soc/esp32/include/soc/rtc_cntl_reg.h \
- .pio/libdeps/esp32dev/Adafruit\ ADS1X15/Adafruit_ADS1X15.h \
- .pio/libdeps/esp32dev/Adafruit\ BusIO/Adafruit_I2CDevice.h \
- src/Utils/WifiManager.h .pio/libdeps/esp32dev/WiFiManager/WiFiManager.h \
+ src/ota.h .pio/libdeps/esp32dev/WiFiManager/WiFiManager.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/esp_wifi_private.h \
@@ -219,6 +217,9 @@
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  .pio/libdeps/esp32dev/WiFiManager/wm_strings_en.h \
  .pio/libdeps/esp32dev/WiFiManager/wm_consts_en.h \
+ C:/Users/josue/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src/ArduinoOTA.h \
+ .pio/libdeps/esp32dev/Adafruit\ ADS1X15/Adafruit_ADS1X15.h \
+ .pio/libdeps/esp32dev/Adafruit\ BusIO/Adafruit_I2CDevice.h \
  src/../lib/WhatsApp/WhatsApp.h \
  .pio/libdeps/esp32dev/UrlEncode/src/UrlEncode.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src/HTTPClient.h \
@@ -262,5 +263,4 @@
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/port/include/aes/esp_aes.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/aes_types.h \
  C:/Users/josue/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/mbedtls/include/mbedtls/error.h \
- src/Services/phApiSender.h src/../lib/OtaManager/OtaManager.h \
- C:/Users/josue/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdate/src/HTTPUpdate.h
+ src/Services/phApiSender.h
