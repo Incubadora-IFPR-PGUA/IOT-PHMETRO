@@ -2,9 +2,8 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <soc/rtc_cntl_reg.h>
-#include "ota.h"
-
 #include <Adafruit_ADS1X15.h>
 #include "../lib/WhatsApp/WhatsApp.h"
 #include "Services/phApiSender.h"
@@ -38,7 +37,7 @@ float readPH() {
     }
 
     float voltage = sum / samples;
-    float ph = -5.4545 * voltage + 21.29;
+    float ph = -5.8606 * voltage + 22.5536;
     ph = round(ph * 10.0) / 10.0;
 
     Serial.print("Tensão média: ");
@@ -70,46 +69,37 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
     Serial.begin(115200);
-    Wire.begin(21, 22);
-    Wire.setClock(100000);
     delay(100);
 
-    Serial.println("\nEscaneando barramento I2C...");
-    int found = 0;
-    for (byte addr = 1; addr < 127; addr++) {
-        Wire.beginTransmission(addr);
-        byte error = Wire.endTransmission();
-        if (error == 0) {
-            Serial.print("  Dispositivo encontrado em 0x");
-            Serial.println(addr, HEX);
-            found++;
-        }
-    }
-    if (found == 0) Serial.println("  Nenhum dispositivo I2C encontrado!");
-    Serial.println("Scan completo.\n");
+    // WiFiManager wm;
+    // wm.setConfigPortalTimeout(180); 
+    // if (!wm.autoConnect("ESP32-PHmetro")) {
+    //     Serial.println("Falha ao conectar no WiFi. Reiniciando...");
+    //     ESP.restart();
+    // }
+    // Serial.println("WiFi conectado! IP: " + WiFi.localIP().toString());
+
+    Wire.begin(21, 22);
+    Wire.setClock(100000);
+    Wire.setTimeOut(50);
+    delay(100);
 
     ads.setGain(GAIN_TWOTHIRDS);
 
     adsOk = initADS();
     if (!adsOk) {
-        Serial.println("Falha ao iniciar o ADS.");
-        //while (1);
+        Serial.println("ADS não encontrado no setup. Vai tentar novamente no loop...");
     }
-
-    setupOTA();
 }
 
 void loop() {
-    ArduinoOTA.handle();
-
-    // Pisca LED
-    if (millis() - lastBlink >= 50) {
+    //led
+    if (millis() - lastBlink >= 5000) {
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
         lastBlink = millis();
     }
 
-    // Lê pH a cada 10s sem travar
     if (millis() - lastPhRead >= phInterval) {
         lastPhRead = millis();
 
@@ -120,10 +110,9 @@ void loop() {
 
         if (adsOk) {
             float phValue = readPH();
-            phSender.sendPhToApi(phValue, 2);
-
+            //phSender.sendPhToApi(phValue, 2);
             if (millis() - lastSendTime >= sendInterval) {
-                whatsapp.sendWhatsAppMessage("pH atual: " + String(phValue, 2));
+                //whatsapp.sendWhatsAppMessage("pH atual: " + String(phValue, 2));
                 lastSendTime = millis();
             }
         }
