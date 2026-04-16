@@ -21,7 +21,7 @@ unsigned long lastPhRead = 0;
 unsigned long lastBlink = 0;
 
 const unsigned long sendInterval = 3600000;
-const unsigned long phInterval = 10000;
+const unsigned long phInterval = 1000000;
 
 bool ledState = false;
 bool adsOk = false;
@@ -71,13 +71,13 @@ void setup() {
     Serial.begin(115200);
     delay(100);
 
-    // WiFiManager wm;
-    // wm.setConfigPortalTimeout(180); 
-    // if (!wm.autoConnect("ESP32-PHmetro")) {
-    //     Serial.println("Falha ao conectar no WiFi. Reiniciando...");
-    //     ESP.restart();
-    // }
-    // Serial.println("WiFi conectado! IP: " + WiFi.localIP().toString());
+    WiFiManager wm;
+    wm.setConfigPortalTimeout(180); 
+    if (!wm.autoConnect("ESP32-PHmetro")) {
+        Serial.println("Falha ao conectar no WiFi. Reiniciando...");
+        ESP.restart();
+    }
+    Serial.println("WiFi conectado! IP: " + WiFi.localIP().toString());
 
     Wire.begin(21, 22);
     Wire.setClock(100000);
@@ -93,13 +93,8 @@ void setup() {
 }
 
 void loop() {
-    //led
-    if (millis() - lastBlink >= 5000) {
-        ledState = !ledState;
-        digitalWrite(LED_PIN, ledState);
-        lastBlink = millis();
-    }
-
+    readPH();
+    
     if (millis() - lastPhRead >= phInterval) {
         lastPhRead = millis();
 
@@ -110,7 +105,7 @@ void loop() {
 
         if (adsOk) {
             float phValue = readPH();
-            //phSender.sendPhToApi(phValue, 2);
+            phSender.sendPhToApi(phValue, 1);
             if (millis() - lastSendTime >= sendInterval) {
                 //whatsapp.sendWhatsAppMessage("pH atual: " + String(phValue, 2));
                 lastSendTime = millis();
