@@ -1,2 +1,9 @@
+.gitignore
 /.vscode
 /src/configs.h
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/.browse.c_cpp_standard_headers
+.vscode/.gcc-flags.json
+.vscode/ipch/
