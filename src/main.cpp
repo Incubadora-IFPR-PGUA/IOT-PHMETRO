@@ -12,7 +12,6 @@
 #define LED_PIN 2
 
 Adafruit_ADS1115 ads;
-byte adsAddress;
 WhatsApp whatsapp;
 phApiSender phSender;
 
@@ -50,12 +49,10 @@ float readPH() {
 
 bool initADS() {
     if (ads.begin(0x49)) {
-        adsAddress = 0x49;
         Serial.println("ADS iniciado em 0x49");
         return true;
     }
     if (ads.begin(0x48)) {
-        adsAddress = 0x48;
         Serial.println("ADS iniciado em 0x48");
         return true;
     }
@@ -69,8 +66,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
     Serial.begin(115200);
-    delay(100);
-
+    delay(3000);
     WiFiManager wm;
     wm.setConfigPortalTimeout(180); 
     if (!wm.autoConnect("ESP32-PHmetro")) {
@@ -101,8 +97,7 @@ void loop() {
         if (!adsOk) {
             Serial.println("ADS offline, tentando reiniciar...");
             adsOk = initADS();
-        }
-
+        } 
         if (adsOk) {
             float phValue = readPH();
             phSender.sendPhToApi(phValue, 1);
